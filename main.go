@@ -4,6 +4,9 @@ import (
 	"api/config"
 	"api/server"
 	"flag"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/rs/zerolog/log"
 )
@@ -18,6 +21,14 @@ func main() {
 
 	log.Debug().Any("config", config.Config).Msg("config file loaded successfully")
 
-	server.Start()
+	go server.StartHttp()
+	go server.StartGrpc()
+
+	// listen signal
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	<-sigs
+
+	log.Info().Msg("server shutdown")
 
 }

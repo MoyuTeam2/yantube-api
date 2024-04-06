@@ -5,7 +5,8 @@ import "github.com/spf13/viper"
 var Config *Conf
 
 type Conf struct {
-	Port int `yaml:"port"`
+	HttpPort int `yaml:"http_port"`
+	GrpcPort int `yaml:"grpc_port"`
 }
 
 func InitConfig() error {

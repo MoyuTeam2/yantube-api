@@ -1,3 +1,4 @@
 
-port: 9081
+httpPort: 9081
+grpcPort: 9082
 

@@ -2,15 +2,21 @@ package server
 
 import (
 	"api/config"
+	pb "api/server/rpc/model"
+	"api/server/rpc/services"
 	"fmt"
+	"net"
 	"net/http"
 
+	"github.com/rs/zerolog/log"
+
 	"github.com/gin-contrib/pprof"
+	"google.golang.org/grpc"
 
 	"github.com/gin-gonic/gin"
 )
 
-func Start() {
+func StartHttp() {
 	gin.SetMode(gin.ReleaseMode)
 	srv := gin.New()
 	srv.Use(gin.Recovery())
@@ -32,8 +38,28 @@ func Start() {
 		live.POST("/stream/code/reset", todo) // 重置推流码
 	}
 
-	srv.Run(fmt.Sprintf(":%d", config.Config.Port))
+	log.Info().Msgf("http server start at :%d", config.Config.HttpPort)
+	if err := srv.Run(fmt.Sprintf(":%d", config.Config.HttpPort)); err != nil {
+		log.Error().Err(err).Msg("failed to start http server")
+	}
 
+}
+
+func StartGrpc() {
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", config.Config.GrpcPort))
+	if err != nil {
+		log.Error().Err(err).Msg("failed to listen grpc port")
+		return
+	}
+
+	grpcServer := grpc.NewServer()
+	pb.RegisterHelloServiceServer(grpcServer, &services.HelloService{})
+
+	log.Info().Msgf("grpc server start at :%d", config.Config.GrpcPort)
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Error().Err(err).Msg("failed to start grpc server")
+		return
+	}
 }
 
 func todo(c *gin.Context) {
