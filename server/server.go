@@ -53,7 +53,7 @@ func StartGrpc() {
 	}
 
 	grpcServer := grpc.NewServer()
-	pb.RegisterHelloServiceServer(grpcServer, &services.HelloService{})
+	pb.RegisterStreamServerServer(grpcServer, services.NewStreamServerService())
 
 	log.Info().Msgf("grpc server start at :%d", config.Config.GrpcPort)
 	if err := grpcServer.Serve(lis); err != nil {

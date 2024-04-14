@@ -47,3 +47,5 @@ go.work
 
 .idea/
 /api
+*.log
+/test.db

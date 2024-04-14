@@ -2,3 +2,6 @@
 httpPort: 9081
 grpcPort: 9082
 
+db:
+  driver: sqlite
+  filepath: test.db
