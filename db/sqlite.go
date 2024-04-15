@@ -70,3 +70,12 @@ func (s *Sqlite) UnregisterStreamServer(host string) error {
 	}
 	return nil
 }
+
+func (s *Sqlite) GetAllActiveStreamServers() ([]*models.StreamServer, error) {
+	var servers []*models.StreamServer
+	err := s.db.Where("is_active = ?", true).Find(&servers).Error
+	if err != nil {
+		return nil, err
+	}
+	return servers, nil
+}

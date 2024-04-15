@@ -17,9 +17,12 @@ var (
 	dumpInterval             = 1 * time.Minute
 
 	configLock sync.RWMutex
+
+	sysTotalMemory uint64
 )
 
 func init() {
+	sysTotalMemory, _ = getSystemTotalMemory()
 	go lookMemStats()
 }
 
@@ -72,7 +75,7 @@ func needMemDump() bool {
 		return true
 	}
 
-	if float64(memStats.Alloc) >= float64(memStats.Sys)*memUsedRatioLimit {
+	if sysTotalMemory > 0 && float64(memStats.Alloc) >= float64(sysTotalMemory)*memUsedRatioLimit {
 		return true
 	}
 
@@ -97,15 +100,28 @@ func DumpMemStats() error {
 
 func lookMemStats() {
 	lastDumpTime := time.Now()
+	keepHighMem := false
 	for {
-		if !needMemDump() {
-			continue
-		}
-
 		configLock.RLock()
 		checkItvl, dumpItvl := checkInterval, dumpInterval
 		configLock.RUnlock()
 
+		// wait for next check
+		time.Sleep(checkItvl)
+
+		// continue if no need to dump
+		if !needMemDump() {
+			keepHighMem = false
+			continue
+		}
+
+		// continue if keeping high memory
+		if keepHighMem {
+			continue
+		}
+		keepHighMem = true
+
+		// continue if dump too frequently
 		if time.Since(lastDumpTime) < dumpItvl {
 			continue
 		}
@@ -113,6 +129,6 @@ func lookMemStats() {
 		DumpMemStats()
 
 		lastDumpTime = time.Now()
-		time.Sleep(checkItvl)
+
 	}
 }

@@ -47,5 +47,7 @@ go.work
 
 .idea/
 /api
+/yantube-api
 *.log
 /test.db
+*.prof

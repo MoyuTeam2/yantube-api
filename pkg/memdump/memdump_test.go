@@ -1,6 +1,7 @@
 package memdump
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -8,14 +9,21 @@ import (
 
 func TestMemdump(t *testing.T) {
 	SetMemUsedBytesLimit(1 * 1024 * 1024) // 1MB
+	SetDumpToDir(".")
+	t.Log("PWD:", os.Getenv("PWD"))
+
 	stat, err := getMemStats()
 	require.Nil(t, err)
-	t.Logf("Alloc: %d, Sys: %d", stat.Alloc, stat.Sys)
-	SetDumpToDir("/Users/icceey/Projects/yantube-api")
+	t.Logf("Alloc: %d, Total: %d", stat.Alloc, sysTotalMemory)
 	require.False(t, needMemDump())
+
 	data := make([]byte, 2*1024*1024) // 2MB
-	t.Logf("Alloc: %d, Sys: %d", stat.Alloc, stat.Sys)
+
+	stat, err = getMemStats()
+	require.Nil(t, err)
+	t.Logf("Alloc: %d, Total: %d", stat.Alloc, sysTotalMemory)
 	require.True(t, needMemDump())
+
 	err = DumpMemStats()
 	require.Nil(t, err)
 	for i := 0; i < 100; i++ {

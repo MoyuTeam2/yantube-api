@@ -5,3 +5,6 @@ grpcPort: 9082
 db:
   driver: sqlite
   filepath: test.db
+
+streamserver:
+  secret: "secret"

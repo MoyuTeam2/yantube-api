@@ -2,6 +2,7 @@ package db
 
 import (
 	"api/config"
+	"api/models"
 	"errors"
 )
 
@@ -9,6 +10,7 @@ type DB interface {
 	RegisterStreamServer(host string) error
 	StreamServerKeepLive(host string) error
 	UnregisterStreamServer(host string) error
+	GetAllActiveStreamServers() ([]*models.StreamServer, error)
 }
 
 var db DB
