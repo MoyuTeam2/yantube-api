@@ -1,14 +1,26 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"fmt"
+	"strings"
+
+	"github.com/spf13/viper"
+)
 
 var Config *Conf
 
 type Conf struct {
-	HttpPort     int        `yaml:"http_port"`
-	GrpcPort     int        `yaml:"grpc_port"`
-	DB           DBConf     `yaml:"db"`
-	StreamServer StreamConf `yaml:"streamserver"`
+	Metrics      MetricsConf `yaml:"metrics"`
+	HttpPort     int         `yaml:"http_port"`
+	GrpcPort     int         `yaml:"grpc_port"`
+	DB           DBConf      `yaml:"db"`
+	StreamServer StreamConf  `yaml:"streamserver"`
+}
+
+type MetricsConf struct {
+	Enabled     bool   `mapstructure:"enabled" mapstructure_default:"true"`
+	UseHttpConf bool   `mapstructure:"use_http_conf" default:"true"`
+	BindAddress string `mapstructure:"bind_address" default:"127.0.0.1:9090"`
 }
 
 type DBConf struct {
@@ -21,19 +33,35 @@ type StreamConf struct {
 	Secret string `yaml:"secret"`
 }
 
+func ParseConfig() (*Conf, error) {
+	v := viper.GetViper()
+
+	v.AddConfigPath(".")
+	v.SetConfigName("config")
+	v.AutomaticEnv()
+	v.SetEnvPrefix("STREAM_API")
+	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
+	err := v.ReadInConfig()
+	if err != nil {
+		return nil, err
+	}
+	c := &Conf{}
+	// defaults.MustSet(c)
+	fmt.Println(v.Get("metrics.bind_address"))
+
+	err = v.Unmarshal(c)
+	if err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
 func InitConfig() error {
-	viper.AddConfigPath(".")
-	viper.SetConfigName("config")
-	viper.AutomaticEnv()
-	viper.SetEnvPrefix("STREAM_API")
-	err := viper.ReadInConfig()
+	c, err := ParseConfig()
 	if err != nil {
 		return err
 	}
-	Config = &Conf{}
-	err = viper.Unmarshal(Config)
-	if err != nil {
-		return err
-	}
+	Config = c
 	return nil
 }
