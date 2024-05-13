@@ -36,3 +36,21 @@ func TestParseConfig(t *testing.T) {
 
 	})
 }
+
+func Test_getKeysFromStructType(t *testing.T) {
+	type testStruct struct {
+		field1      string
+		field2      bool   `mapstructure:"field_2"`
+		ignoreField string `mapstructure:"-"`
+		structField struct {
+			field1 string
+			field2 bool `mapstructure:"field_2"`
+		}
+	}
+
+	keys := getKeysFromStructType[testStruct](".")
+	assert.ElementsMatch(t,
+		[]string{"field1", "field_2", "structfield.field1", "structfield.field_2"},
+		keys,
+	)
+}

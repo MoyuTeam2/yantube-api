@@ -22,21 +22,11 @@ func StartHttp() {
 	srv.Use(gin.Recovery())
 	srv.Use(Logger())
 
-	pprof.Register(srv)
-
-	api := srv.Group("/api")
-
-	account := api.Group("/account")
-	{
-		account.POST("/create", todo) // 创建账号
-		account.POST("/auth", todo)   // 鉴权
+	if config.Config.Metrics.Enabled && config.Config.Metrics.UseHttpConf {
+		pprof.Register(srv)
 	}
 
-	live := api.Group("/live")
-	{
-		live.GET("/stream/code", todo)        // 获取推流码
-		live.POST("/stream/code/reset", todo) // 重置推流码
-	}
+	RegisterRouter(srv)
 
 	log.Info().Msgf("http server start at :%d", config.Config.HttpPort)
 	if err := srv.Run(fmt.Sprintf(":%d", config.Config.HttpPort)); err != nil {

@@ -5,6 +5,8 @@ import (
 	"api/db"
 	"api/server"
 	"flag"
+	"net/http"
+	"net/http/pprof"
 	"os"
 	"os/signal"
 	"syscall"
@@ -40,6 +42,19 @@ func main() {
 	err = db.Init(config.Config)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to init db")
+	}
+
+	enableMetrics := config.Config.Metrics.Enabled
+
+	if enableMetrics && !config.Config.Metrics.UseHttpConf {
+		bind := config.Config.Metrics.BindAddress
+
+		go func() {
+			err := http.ListenAndServe(bind, pprof.Handler("/debug"))
+			if err != nil {
+				log.Fatal().Err(err).Msg("failed to start pprof server")
+			}
+		}()
 	}
 
 	go server.StartHttp()

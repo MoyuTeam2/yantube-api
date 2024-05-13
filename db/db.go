@@ -11,6 +11,13 @@ type DB interface {
 	StreamServerKeepLive(host string) error
 	UnregisterStreamServer(host string) error
 	GetAllActiveStreamServers() ([]*models.StreamServer, error)
+
+	CreateUser(user *models.User) error
+	GetUserByUsername(username string) (*models.User, error)
+	RevokeUserStreamCode(username string, streamCode string) error
+	DeleteUserByUsername(username string) error
+
+	Close() error
 }
 
 var db DB

@@ -19,7 +19,7 @@ func newSqlite(filename string) (*Sqlite, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = db.AutoMigrate(&models.StreamServer{})
+	err = db.AutoMigrate(&models.StreamServer{}, &models.User{})
 	if err != nil {
 		return nil, err
 	}
@@ -78,4 +78,49 @@ func (s *Sqlite) GetAllActiveStreamServers() ([]*models.StreamServer, error) {
 		return nil, err
 	}
 	return servers, nil
+}
+
+func (s *Sqlite) CreateUser(user *models.User) error {
+	return s.db.Create(user).Error
+}
+
+func (s *Sqlite) GetUserByUsername(username string) (*models.User, error) {
+	var user models.User
+	err := s.db.Where("username = ?", username).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (s *Sqlite) RevokeUserStreamCode(username string, streamCode string) error {
+	result := s.db.Model(&models.User{}).
+		Where("username = ?", username).
+		Update("stream_code", streamCode)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return ErrUserNotFound
+	}
+	return nil
+}
+
+func (s *Sqlite) DeleteUserByUsername(username string) error {
+	result := s.db.Where("username = ?", username).Delete(&models.User{})
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return ErrUserNotFound
+	}
+	return nil
+}
+
+func (s *Sqlite) Close() error {
+	sqlDB, err := s.db.DB()
+	if err != nil {
+		return err
+	}
+	return sqlDB.Close()
 }
