@@ -2,8 +2,10 @@ package config
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 
+	"github.com/go-viper/mapstructure/v2"
 	"github.com/spf13/viper"
 )
 
@@ -64,4 +66,16 @@ func InitConfig() error {
 	}
 	Config = c
 	return nil
+}
+
+func getKeysFromStruct[S any](delim string) []string {
+	var s = reflect.TypeFor[S]()
+	var keys []string
+	for i := 0; i < s.NumField(); i++ {
+		field := s.Field(i)
+		tag := field.Tag
+		if tag.Get("mapstructure") != "" {
+			
+		}
+	}
 }
