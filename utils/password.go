@@ -2,7 +2,6 @@ package utils
 
 import (
 	"bytes"
-	"crypto"
 	"crypto/rand"
 	"crypto/sha256"
 	"crypto/sha512"
@@ -10,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"hash"
-	"io"
 
 	"golang.org/x/crypto/pbkdf2"
 )
