@@ -1,12 +1,14 @@
 package account
 
 import (
+	"api/config"
 	"api/db"
 	"api/models"
-	"api/pkg/utils"
+	"api/server/http/common"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 type CreateUserRequest struct {
@@ -15,22 +17,30 @@ type CreateUserRequest struct {
 }
 
 func Create(c *gin.Context) {
-	var req CreateUserRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if !config.Config.User.AllowRegister {
+		c.JSON(http.StatusForbidden, common.NewErrorResponse(http.StatusForbidden, "register is not allowed"))
 		return
 	}
 
-	user := &models.User{
-		Username:   req.Username,
-		Password:   utils.EncryptPassword(req.Password),
-		StreamCode: utils.GenerateRandomString(16),
+	var req CreateUserRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Error().Err(err).Msg("create user request bind json failed")
+		c.JSON(http.StatusBadRequest, common.NewErrorResponse(http.StatusBadRequest, "bad request"))
+		return
+	}
+
+	user, err := models.NewUserWithPassword(req.Username, req.Password)
+	if err != nil {
+		log.Error().Err(err).Msg("create user failed")
+		c.JSON(http.StatusInternalServerError, common.NewErrorResponse(http.StatusInternalServerError, "server create user failed"))
+		return
 	}
 
 	if err := db.Get().CreateUser(user); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		log.Error().Err(err).Msg("save user failed")
+		c.JSON(http.StatusInternalServerError, common.NewErrorResponse(http.StatusInternalServerError, "server save user failed"))
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "success"})
+	c.JSON(http.StatusOK, common.NewSuccessResponse(nil))
 }

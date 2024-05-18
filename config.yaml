@@ -1,10 +1,15 @@
 
-httpPort: 9081
-grpcPort: 9082
+http_port: 9081
+grpc_port: 9082
 
 db:
   driver: sqlite
   filepath: test.db
+
+user:
+  allow_register: true
+  auth_realm: "stream api"
+  auth_secret: "secret"
 
 streamserver:
   secret: "secret"

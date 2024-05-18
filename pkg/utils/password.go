@@ -9,6 +9,8 @@ import (
 	"errors"
 	"fmt"
 	"hash"
+	"strconv"
+	"strings"
 
 	"golang.org/x/crypto/pbkdf2"
 )
@@ -69,15 +71,24 @@ func MkPbkdf2String(password []byte, salt []byte, p *Pbkdf2Impl) string {
 }
 
 func ValidatePbkdf2Cipher(s string, password string) (bool, error) {
-	var hashAlgo string
-	var keyLen int
-	var iter int
-	var saltBase64, cipherBase64 string
+	split := strings.Split(s, "$")
+	if len(split) != 5 {
+		return false, ErrInvalidPbkdf2Format
+	}
 
-	_, err := fmt.Sscanf(s, `%s$%d$%d$%s$%s`, &hashAlgo, &keyLen, &iter, &saltBase64, &cipherBase64)
+	hashAlgo := split[0]
+	keyLen, err := strconv.Atoi(split[1])
 	if err != nil {
 		return false, ErrInvalidPbkdf2Format
 	}
+
+	iter, err := strconv.Atoi(split[2])
+	if err != nil {
+		return false, ErrInvalidPbkdf2Format
+	}
+
+	saltBase64 := split[3]
+	cipherBase64 := split[4]
 
 	salt, err := base64.StdEncoding.DecodeString(saltBase64)
 	if err != nil {

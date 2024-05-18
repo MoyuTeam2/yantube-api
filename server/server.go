@@ -2,6 +2,7 @@ package server
 
 import (
 	"api/config"
+	"api/server/middleware"
 	pb "api/server/rpc/model"
 	"api/server/rpc/services"
 	"fmt"
@@ -20,7 +21,7 @@ func StartHttp() {
 	gin.SetMode(gin.ReleaseMode)
 	srv := gin.New()
 	srv.Use(gin.Recovery())
-	srv.Use(Logger())
+	srv.Use(middleware.Logger())
 
 	if config.Config.Metrics.Enabled && config.Config.Metrics.UseHttpConf {
 		pprof.Register(srv)

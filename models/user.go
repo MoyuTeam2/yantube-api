@@ -1,6 +1,6 @@
 package models
 
-import "api/utils"
+import "api/pkg/utils"
 
 type User struct {
 	ID         int    `json:"id" gorm:"primaryKey"`
@@ -23,7 +23,8 @@ func NewUserWithPassword(username, password string) (*User, error) {
 		return nil, err
 	}
 	return &User{
-		Username: username,
-		Password: utils.DefaultPbkdf2.FormatedString([]byte(password), salt),
+		Username:   username,
+		Password:   utils.DefaultPbkdf2.FormatedString([]byte(password), salt),
+		StreamCode: utils.GenerateRandomString(16),
 	}, nil
 }

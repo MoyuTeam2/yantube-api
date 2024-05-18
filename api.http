@@ -1,0 +1,35 @@
+@baseUrl=http://127.0.0.1:9081/api
+@authToken = {{login.response.body.$.token}}
+
+
+### create user
+# @name register
+POST {{baseUrl}}/account/create
+Content-Type: application/json
+
+{
+    "username": "John Doe",
+    "password": "password"
+}
+
+### login
+# @name login
+POST {{baseUrl}}/account/login
+Content-Type: application/json
+
+{
+    "username": "John Doe",
+    "password": "password"
+}
+
+
+### refresh token
+# @name refresh
+GET {{baseUrl}}/account/refresh
+Authorization: Bearer {{authToken}}
+
+
+### logout
+# @name logout
+POST {{baseUrl}}/account/logout
+Authorization: Bearer {{authToken}}

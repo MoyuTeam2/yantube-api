@@ -16,6 +16,7 @@ type Conf struct {
 	HttpPort     int         `mapstructure:"http_port"`
 	GrpcPort     int         `mapstructure:"grpc_port"`
 	DB           DBConf      `mapstructure:"db"`
+	User         UserConf    `mapstructure:"user"`
 	StreamServer StreamConf  `mapstructure:"streamserver"`
 }
 
@@ -29,6 +30,12 @@ type DBConf struct {
 	Driver   string `mapstructure:"driver"`
 	DSN      string `mapstructure:"dsn"`
 	FilePath string `mapstructure:"filepath"` // for sqlite only
+}
+
+type UserConf struct {
+	AllowRegister bool   `mapstructure:"allow_register" default:"true"`
+	AuthRealm     string `mapstructure:"auth_realm" default:"stream api"`
+	AuthSecret    string `mapstructure:"auth_secret"`
 }
 
 type StreamConf struct {
@@ -106,6 +113,7 @@ func getKeysFromAny(prefix string, e reflect.Type, delim string) []string {
 	case reflect.Pointer:
 		return getKeysFromAny(prefix, e.Elem(), delim)
 	default:
+
 		return []string{prefix}
 	}
 }

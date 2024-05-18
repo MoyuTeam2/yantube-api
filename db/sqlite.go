@@ -2,6 +2,7 @@ package db
 
 import (
 	"api/models"
+	"errors"
 	"time"
 
 	"gorm.io/driver/sqlite"
@@ -88,6 +89,9 @@ func (s *Sqlite) GetUserByUsername(username string) (*models.User, error) {
 	var user models.User
 	err := s.db.Where("username = ?", username).First(&user).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrUserNotFound
+		}
 		return nil, err
 	}
 	return &user, nil
